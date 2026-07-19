@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Computer Graphics — Sprite Transformation</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#ffffff;
+    --ink-soft:#fdeef3;
+    --paper:#3a2530;
+    --paper-dim:#a9899a;
+    --amber:#f43f5e;
+    --teal:#be123c;
+    --line:#f5d9e2;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+  }
+  a{ color:var(--amber); }
+  .wrap{ max-width:900px; margin:0 auto; padding:0 24px; }
+  nav{
+    border-bottom:1px solid var(--line);
+    padding:16px 0;
+  }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; }
+  .logo{ font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--amber); }
+  .back{ font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--paper-dim); }
+  .back:hover{ color:var(--paper); }
+
+  header{ padding:56px 0 32px; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--amber); letter-spacing:.05em; margin-bottom:14px; }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:clamp(28px,5vw,44px); margin:0 0 12px; }
+  header p{ color:var(--paper-dim); max-width:560px; margin:0; }
+
+  main{ padding:0 0 72px; display:grid; grid-template-columns:520px 1fr; gap:36px; align-items:start; }
+  @media (max-width:820px){ main{ grid-template-columns:1fr; } }
+
+  .canvas-box{
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+  }
+  #canvas{
+    width:100%;
+    max-width:480px;
+    aspect-ratio:1/1;
+    border:1px solid var(--line);
+    border-radius:6px;
+    image-rendering: pixelated;
+    display:block;
+    margin:0 auto;
+    background:#fff;
+    cursor:crosshair;
+  }
+  .hint{
+    margin-top:14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+    text-align:center;
+  }
+
+  .panel{
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:24px 26px;
+  }
+  .panel h2{ font-family:'Fraunces', serif; font-size:18px; font-weight:500; margin:0 0 16px; }
+  .control-list{ display:flex; flex-direction:column; gap:10px; }
+  .control-row{
+    display:flex; align-items:center; gap:12px;
+    font-size:14px;
+  }
+  kbd{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    background:var(--ink);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:3px 8px;
+    color:var(--teal);
+    min-width:70px;
+    text-align:center;
+  }
+  .control-row span.desc{ color:var(--paper-dim); }
+
+  .status{
+    margin-top:20px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--paper-dim);
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .status b{ color:var(--paper); }
+
+  footer{ padding:28px 0; text-align:center; color:var(--paper-dim); font-size:13px; font-family:'IBM Plex Mono', monospace; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="logo">~/portfolio</span>
+    <a class="back" href="index.html">← กลับหน้า CV</a>
+  </div>
+</nav>
+
+<header class="wrap">
+  <div class="eyebrow">Interactive Computer Graphics</div>
+  <h1>Sprite Transformation: Translate · Rotate · Scale</h1>
+  <p>เดโมกราฟิกแบบ raster ที่วาด sprite สี 24 บิตด้วย ImageData โดยตรง รองรับการแปลงตำแหน่ง (translate) ด้วยเมาส์ การหมุน (rotate) และการย่อ-ขยาย (scale) ด้วยคีย์บอร์ดแบบ real-time</p>
+</header>
+
+<main class="wrap">
+  <div class="canvas-box">
+    <canvas id="canvas" width="200" height="200"></canvas>
+    <div class="hint">ขยับเมาส์เหนือ canvas เพื่อย้ายตำแหน่ง sprite</div>
+  </div>
+
+  <div class="panel">
+    <h2>การควบคุม</h2>
+    <div class="control-list">
+      <div class="control-row"><kbd>Mouse move</kbd><span class="desc">Translate — ย้ายตำแหน่ง sprite</span></div>
+      <div class="control-row"><kbd>← / →</kbd><span class="desc">Rotate — หมุน sprite ซ้าย/ขวา</span></div>
+      <div class="control-row"><kbd>↑ / ↓</kbd><span class="desc">Scale — ขยาย/ย่อขนาด sprite</span></div>
+      <div class="control-row"><kbd>1 · 2 · 3</kbd><span class="desc">เปลี่ยนสีเส้นวาดด้วยเมาส์ (แดง/เขียว/น้ำเงิน)</span></div>
+      <div class="control-row"><kbd>Drag</kbd><span class="desc">คลิกค้างแล้วลากเพื่อวาดเส้นอิสระ</span></div>
+    </div>
+
+    <div class="status">
+      <div>มุมหมุนปัจจุบัน: <b id="degOut">0°</b></div>
+      <div>สเกลปัจจุบัน: <b id="scaleOut">1.0x</b></div>
+    </div>
+  </div>
+</main>
+
+<footer>Raster Graphics — Sprite Transformation Demo</footer>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const imageData = ctx.createImageData(canvas.width, canvas.height);
+const pixels = imageData.data; // Array of color [R,G,B,A, R,G,B,A, ...]
+
+function putPixel(x, y, r, g, b, a = 255) {
+  if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+  const idx = (y * canvas.width + x) * 4; // หา index แรกของ pixel (x,y)
+  pixels[idx] = r;
+  pixels[idx + 1] = g;
+  pixels[idx + 2] = b;
+  pixels[idx + 3] = a;
+}
+
+function drawLine(x1, y1, x2, y2, r, g, b, a = 255) {
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+
+  if(dx > dy) {
+    const m = (y2 - y1) / (x2 - x1);
+    const c = y1 - m * x1;
+    for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+      const y = Math.round(m * x + c);
+      putPixel(x, y, r, g, b, a);
+    }
+  } else {
+    const m = (x2 - x1) / (y2 - y1);
+    const c = x1 - m * y1;
+    for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+      const x = Math.round(m * y + c);
+      putPixel(x, y, r, g, b, a);
+    }
+  }
+}
+
+function drawRectFilled(x1, y1, x2, y2, r, g, b, a = 255) {
+  for (let y = y1; y <= y2; y++) {
+    for (let x = x1; x <= x2; x++) {
+      putPixel(x, y, r, g, b, a);
+    }
+  }
+}
+
+function drawEllipse(cx, cy, rx, ry, r, g, b, a = 255) {
+  for (let y = -ry; y <= ry; y++) {
+    for (let x = -rx; x <= rx; x++) {
+      if ((x * x) / (rx * rx) + (y * y) / (ry * ry) < 1) {
+        putPixel(cx + x, cy + y, r, g, b, a);
+      }
+    }
+  }
+}
+
+function drawSpriteRotateScale(sprite, x, y, degree, scaleX, scaleY, a = 255) {
+  for (let j = 0; j < sprite.length; j++) {
+    for (let i = 0; i < sprite[j].length; i++) {
+      const color = sprite[j][i];
+      if (color !== null) {
+
+        const r = (color >> 16) & 255;
+        const g = (color >> 8) & 255;
+        const b = color & 255;
+
+        const cX = i - (sprite[j].length / 2);
+        const cY = j - (sprite.length / 2);
+
+        const rad = degree * Math.PI / 180;
+        const x_rotated = Math.round(cX * Math.cos(rad) - cY * Math.sin(rad));
+        const y_rotated = Math.round(cX * Math.sin(rad) + cY * Math.cos(rad));
+
+        const x_rotated_scaled = Math.round(x_rotated * scaleX);
+        const y_rotated_scaled = Math.round(y_rotated * scaleY);
+
+        drawEllipse(x + x_rotated_scaled, y + y_rotated_scaled, Math.max(1, Math.round(scaleX)), Math.max(1, Math.round(scaleY)), r, g, b, 255);
+      }
+    }
+  }
+}
+
+function toScaledMousePos(posX, posY) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: Math.floor((posX - rect.left) * scaleX),
+    y: Math.floor((posY - rect.top) * scaleY)
+  };
+}
+
+// sprite 24-bit: pink bow (32x32), ใช้ค่าสี hex เป็นตัวเลขต่อพิกเซล
+const pinkBowSprite24Bit32x32 = [
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, null, null, null, null, null, null, null, null, null, null, null, null, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, null, null, null, null, null, null],
+  [null, null, null, 0x4C0519, 0xFDA4AF, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null, null, null, null, null, null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xFDA4AF, 0xFDA4AF, 0x4C0519, null, null, null, null, null],
+  [null, null, 0x4C0519, 0xFDA4AF, 0xFFFFFF, 0xFDA4AF, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null, null, null, null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xFDA4AF, 0xFDA4AF, 0xFFFFFF, 0xFDA4AF, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0xFDA4AF, 0xFDA4AF, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null, null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xFDA4AF, 0xFDA4AF, 0xFDA4AF, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0xFFFFFF, 0xFDA4AF, 0xFDA4AF, 0xFDA4AF, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0xFDA4AF, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0xF43F5E, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0xF43F5E, 0xF43F5E, 0x4C0519, null, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0xF43F5E, 0x4C0519, null, null, null, null, null, null, 0x4C0519, 0x4C0519, 0x4C0519, 0x4C0519, null, null, null, null, null, null, 0x4C0519, 0xF43F5E, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, 0x4C0519, 0x4C0519, 0xF43F5E, 0xF43F5E, 0x4C0519, 0x4C0519, null, null, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null],
+  [null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, 0x4C0519, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x4C0519, null, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null],
+  [null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, 0x4C0519, 0xFFFFFF, 0xFDA4AF, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, null],
+  [null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, 0x4C0519, 0xFDA4AF, 0xFDA4AF, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, null],
+  [null, null, null, null, 0x4C0519, 0x991B1B, 0x4C0519, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, null, null],
+  [null, null, null, null, 0x4C0519, 0x991B1B, 0x4C0519, null, 0x4C0519, 0xF43F5E, 0xF43F5E, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, 0x4C0519, 0x4C0519, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, 0x4C0519, 0x4C0519, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, 0x4C0519, 0x991B1B, 0x991B1B, 0x991B1B, 0x4C0519, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, 0x4C0519, 0x4C0519, 0x4C0519, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+];
+
+let isDragging = false;
+let previousX = 0;
+let previousY = 0;
+let r = 0, g = 0, b = 0, a = 255;
+let degree = 0;
+let scale = 1;
+let mouseX = 100, mouseY = 100;
+
+canvas.addEventListener('mousedown', () => { isDragging = true; });
+canvas.addEventListener('mouseup', () => { isDragging = false; });
+
+canvas.addEventListener('mousemove', (event) => {
+  const { x, y } = toScaledMousePos(event.clientX, event.clientY);
+  mouseX = x;
+  mouseY = y;
+
+  if(isDragging) {
+    drawLine(previousX, previousY, x, y, r, g, b);
+    ctx.putImageData(imageData, 0, 0);
+  }
+  previousX = x;
+  previousY = y;
+});
+
+const degOut = document.getElementById('degOut');
+const scaleOut = document.getElementById('scaleOut');
+
+window.addEventListener('keydown', (event) => {
+  if(event.key === '1') { r = 255; g = 0; b = 0; }
+  else if(event.key === '2') { r = 0; g = 255; b = 0; }
+  else if(event.key === '3') { r = 0; g = 0; b = 255; }
+
+  if(event.key === 'ArrowLeft') { degree -= 5; }
+  else if(event.key === 'ArrowRight') { degree += 5; }
+
+  if(event.key === 'ArrowUp') { scale += 0.1; }
+  else if(event.key === 'ArrowDown') { scale = Math.max(0.1, scale - 0.1); }
+
+  degOut.textContent = degree + '°';
+  scaleOut.textContent = scale.toFixed(1) + 'x';
+});
+
+ctx.putImageData(imageData, 0, 0);
+
+function animate() {
+  drawRectFilled(0, 0, canvas.width - 1, canvas.height - 1, 255, 255, 255);
+  drawSpriteRotateScale(pinkBowSprite24Bit32x32, mouseX, mouseY, degree, scale, scale);
+  ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
