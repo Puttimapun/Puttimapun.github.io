@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Paint - Assignment#2</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #ffd6e8 0%, #ffc1dd 45%, #ffb6d9 100%);
+    font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 8px;
+  }
+
+  /* ---------- window chrome ---------- */
+  .window {
+    background: #c0c0c0;
+    border: 4px solid #ff8fc7;
+    border-radius: 14px;
+    box-shadow: 0 8px 0 rgba(255, 105, 180, 0.35), 0 8px 24px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 760px;
+    overflow: hidden;
+  }
+  .titlebar {
+    background: linear-gradient(90deg, #ff6fb5, #ff9dd0);
+    color: #fff;
+    font-weight: bold;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .titlebar .box {
+    width: 16px; height: 14px;
+    background: #c0c0c0;
+    border: 1px solid #fff;
+    border-right-color: #404040;
+    border-bottom-color: #404040;
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+    color: #000;
+    margin-left: 3px;
+  }
+  /* ---------- main body layout ---------- */
+  .main {
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    gap: 6px;
+  }
+
+  .panel-in {
+    background: #c0c0c0;
+    border: 2px solid #808080;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* toolbox */
+  .toolbox {
+    flex: 0 1 150px;
+    padding: 4px;
+  }
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+  }
+  .tool-btn {
+    width: 100%; height: 30px;
+    background: #c0c0c0;
+    border: 2px solid #fff;
+    border-right-color: #404040;
+    border-bottom-color: #404040;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+  }
+  .tool-btn:active, .tool-btn.selected {
+    border: 2px solid #404040;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+    background: #a0a0a0;
+  }
+
+  .thickness-box {
+    background: #c0c0c0;
+    flex: 1 1 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 5px 6px;
+    border: 1px solid #808080;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+  }
+  .thickness-label {
+    font-size: 10px;
+    text-align: center;
+    color: #333;
+  }
+  .thickness-preview {
+    background: #fff;
+    border: 1px solid #808080;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+  }
+  .thickness-preview div {
+    background: #000;
+    width: 100%;
+    border-radius: 2px;
+    transition: height 0.05s;
+  }
+  .thickness-value {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+  }
+  .thickness-hint {
+    font-size: 9px;
+    text-align: center;
+    color: #555;
+  }
+
+  /* color area (moved into the toolbox, below thickness) */
+  .color-box {
+    background: #c0c0c0;
+    flex: 0 0 auto;
+    padding: 5px 6px;
+    border: 1px solid #808080;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+  }
+  .color-box-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  /* canvas area */
+  .canvas-area {
+    display: flex;
+    flex-direction: column;
+  }
+  .canvas-wrap {
+    background: #a8a8a8;
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+  }
+  .canvas-inner {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    aspect-ratio: 700 / 420;
+    background: #fff;
+    border: 2px solid #404040;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+  }
+  #mainCanvas, #overlayCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: auto;
+  }
+  #overlayCanvas { cursor: crosshair; }
+
+  .current-swatch {
+    position: relative;
+    width: 30px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+  .current-swatch .back, .current-swatch .front {
+    position: absolute;
+    width: 18px; height: 16px;
+    border: 1px solid #000;
+  }
+  .current-swatch .back { top: 8px; left: 8px; background:#fff; }
+  .current-swatch .front { top: 0; left: 0; }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 20px);
+    gap: 2px;
+  }
+  .swatch {
+    width: 20px;
+    height: 18px;
+    cursor: pointer;
+    border: 1px solid #808080;
+  }
+  .swatch.selected { outline: 2px solid #ff4fa3; outline-offset: -2px; }
+
+
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="titlebar">
+    <span>🎨 Paint</span>
+    <div style="display:flex;">
+      <div class="box">_</div>
+      <div class="box">□</div>
+      <div class="box">×</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- canvas -->
+    <div class="canvas-area">
+      <div class="canvas-wrap">
+        <div class="canvas-inner" id="canvasInner">
+          <canvas id="mainCanvas" width="700" height="420"></canvas>
+          <canvas id="overlayCanvas" width="700" height="420"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- controls (moved below the canvas) -->
+    <div class="controls-row">
+      <div class="panel-in toolbox">
+        <div class="tool-grid">
+          <div class="tool-btn" data-tool="pencil" title="ดินสอ (Pencil)">✏️</div>
+          <div class="tool-btn" data-tool="eraser" title="ยางลบ (Eraser)">
+            <svg width="20" height="16" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="4" width="18" height="9" rx="2" fill="#ff8fc7" stroke="#7a4a63" stroke-width="1"/>
+              <rect x="1" y="4" width="7" height="9" rx="2" fill="#ffe3f1" stroke="#7a4a63" stroke-width="1"/>
+            </svg>
+          </div>
+          <div class="tool-btn" data-tool="line" title="วาดเส้น (Line)">╱</div>
+          <div class="tool-btn" data-tool="rect" title="วาดสี่เหลี่ยม (Rectangle)">▭</div>
+          <div class="tool-btn" data-tool="ellipse" title="วาดวงกลม (Ellipse)">◯</div>
+        </div>
+      </div>
+
+      <div class="thickness-box">
+        <div class="thickness-label">ความหนาเส้น</div>
+        <div class="thickness-preview"><div id="thicknessBar" style="height:2px;"></div></div>
+        <div class="thickness-value" id="thicknessValue">2 px</div>
+        <div class="thickness-hint">▲ เพิ่ม / ▼ ลด</div>
+      </div>
+
+      <div class="color-box">
+        <div class="color-box-top">
+          <div class="current-swatch">
+            <div class="back"></div>
+            <div class="front" id="currentSwatch" style="background:#000;"></div>
+          </div>
+        </div>
+        <div class="swatches" id="swatches"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlayCanvas');
+const octx = overlay.getContext('2d');
+
+const W = canvas.width, H = canvas.height;
+let imageData = ctx.createImageData(W, H);
+let pixels = imageData.data;
+
+/* ---------- low-level pixel functions ---------- */
+function putPixel(x, y, r, g, b, a = 255) {
+  x = Math.round(x); y = Math.round(y);
+  if (x < 0 || x >= W || y < 0 || y >= H) return;
+  const idx = (y * W + x) * 4;
+  pixels[idx] = r;
+  pixels[idx + 1] = g;
+  pixels[idx + 2] = b;
+  pixels[idx + 3] = a;
+}
+
+function fillCanvas(r, g, b) {
+  for (let i = 0; i < pixels.length; i += 4) {
+    pixels[i] = r; pixels[i + 1] = g; pixels[i + 2] = b; pixels[i + 3] = 255;
+  }
+}
+
+// "หัวแปรง" ทำให้เส้นมีความหนาได้ตามค่า size ที่เลือก
+function stampBrush(cx, cy, size, r, g, b, a = 255) {
+  const rad = size / 2;
+  if (rad <= 0.6) { putPixel(cx, cy, r, g, b, a); return; }
+  const rr = Math.ceil(rad);
+  for (let y = -rr; y <= rr; y++) {
+    for (let x = -rr; x <= rr; x++) {
+      if (x * x + y * y <= rad * rad) putPixel(cx + x, cy + y, r, g, b, a);
+    }
+  }
+}
+
+// วาดเส้นตรง  พร้อมความหนา
+function drawLineThick(x1, y1, x2, y2, size, r, g, b, a = 255) {
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+  if (dx === 0 && dy === 0) { stampBrush(x1, y1, size, r, g, b, a); return; }
+  if (dx > dy) {
+    const m = (y2 - y1) / (x2 - x1);
+    const c = y1 - m * x1;
+    const xStart = Math.min(x1, x2), xEnd = Math.max(x1, x2);
+    for (let x = xStart; x <= xEnd; x++) {
+      const y = m * x + c;
+      stampBrush(x, y, size, r, g, b, a);
+    }
+  } else {
+    const m = (x2 - x1) / (y2 - y1);
+    const c = x1 - m * y1;
+    const yStart = Math.min(y1, y2), yEnd = Math.max(y1, y2);
+    for (let y = yStart; y <= yEnd; y++) {
+      const x = m * y + c;
+      stampBrush(x, y, size, r, g, b, a);
+    }
+  }
+}
+
+// วาดสี่เหลี่ยม (เส้นขอบ) จาก 4 เส้นตรง เหมือน drawRect 
+function drawRectThick(x1, y1, x2, y2, size, r, g, b, a = 255) {
+  drawLineThick(x1, y1, x2, y1, size, r, g, b, a);
+  drawLineThick(x2, y1, x2, y2, size, r, g, b, a);
+  drawLineThick(x2, y2, x1, y2, size, r, g, b, a);
+  drawLineThick(x1, y2, x1, y1, size, r, g, b, a);
+}
+
+// วาดวงรี/วงกลม (เส้นขอบ) โดยเดินตามมุม แล้ว stamp หัวแปรงรอบเส้นรอบวง
+function drawEllipseThick(cx, cy, rx, ry, size, r, g, b, a = 255) {
+  rx = Math.max(rx, 1); ry = Math.max(ry, 1);
+  const steps = Math.max(36, Math.round(2 * Math.PI * Math.max(rx, ry)));
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * 2 * Math.PI;
+    const x = cx + rx * Math.cos(t);
+    const y = cy + ry * Math.sin(t);
+    stampBrush(x, y, size, r, g, b, a);
+  }
+}
+
+function render() { ctx.putImageData(imageData, 0, 0); }
+
+fillCanvas(255, 255, 255);
+render();
+
+/* ---------- state ---------- */
+let currentTool = 'pencil';
+let color = { r: 0, g: 0, b: 0 };
+let thickness = 2;
+let isDragging = false;
+let startX = 0, startY = 0, prevX = 0, prevY = 0;
+let undoStack = [];
+
+function pushUndo() {
+  undoStack.push(new Uint8ClampedArray(pixels));
+  if (undoStack.length > 25) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length) return;
+  pixels = undoStack.pop();
+  imageData = new ImageData(pixels, W, H);
+  render();
+}
+
+/* ---------- mouse position helper ---------- */
+function toCanvasPos(evt) {
+  const rect = overlay.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  return {
+    x: Math.floor((evt.clientX - rect.left) * scaleX),
+    y: Math.floor((evt.clientY - rect.top) * scaleY)
+  };
+}
+
+/* ---------- preview drawing (overlay ใช้แค่ระหว่างลาก) ---------- */
+function clearOverlay() { octx.clearRect(0, 0, W, H); }
+
+function drawPreview(x, y) {
+  clearOverlay();
+  octx.strokeStyle = `rgb(${color.r},${color.g},${color.b})`;
+  octx.lineWidth = thickness;
+  octx.lineCap = 'round';
+  if (currentTool === 'line') {
+    octx.beginPath();
+    octx.moveTo(startX, startY);
+    octx.lineTo(x, y);
+    octx.stroke();
+  } else if (currentTool === 'rect') {
+    octx.strokeRect(Math.min(startX, x), Math.min(startY, y), Math.abs(x - startX), Math.abs(y - startY));
+  } else if (currentTool === 'ellipse') {
+    const cx = (startX + x) / 2, cy = (startY + y) / 2;
+    const rx = Math.abs(x - startX) / 2, ry = Math.abs(y - startY) / 2;
+    octx.beginPath();
+    octx.ellipse(cx, cy, Math.max(rx, 1), Math.max(ry, 1), 0, 0, Math.PI * 2);
+    octx.stroke();
+  }
+}
+
+/* ---------- events ---------- */
+overlay.addEventListener('mousedown', (e) => {
+  const { x, y } = toCanvasPos(e);
+  isDragging = true;
+  startX = prevX = x;
+  startY = prevY = y;
+  pushUndo();
+
+  if (currentTool === 'pencil' || currentTool === 'eraser') {
+    const c = currentTool === 'eraser' ? { r: 255, g: 255, b: 255 } : color;
+    stampBrush(x, y, thickness, c.r, c.g, c.b);
+    render();
+  }
+});
+
+overlay.addEventListener('mousemove', (e) => {
+  const { x, y } = toCanvasPos(e);
+
+  if (!isDragging) return;
+
+  if (currentTool === 'pencil' || currentTool === 'eraser') {
+    const c = currentTool === 'eraser' ? { r: 255, g: 255, b: 255 } : color;
+    drawLineThick(prevX, prevY, x, y, thickness, c.r, c.g, c.b);
+    render();
+    prevX = x; prevY = y;
+  } else if (currentTool === 'line' || currentTool === 'rect' || currentTool === 'ellipse') {
+    drawPreview(x, y);
+  }
+});
+
+window.addEventListener('mouseup', (e) => {
+  if (!isDragging) return;
+  isDragging = false;
+  const { x, y } = toCanvasPos(e);
+
+  if (currentTool === 'line') {
+    drawLineThick(startX, startY, x, y, thickness, color.r, color.g, color.b);
+    render();
+  } else if (currentTool === 'rect') {
+    drawRectThick(startX, startY, x, y, thickness, color.r, color.g, color.b);
+    render();
+  } else if (currentTool === 'ellipse') {
+    const cx = (startX + x) / 2, cy = (startY + y) / 2;
+    const rx = Math.abs(x - startX) / 2, ry = Math.abs(y - startY) / 2;
+    drawEllipseThick(cx, cy, rx, ry, thickness, color.r, color.g, color.b);
+    render();
+  }
+  clearOverlay();
+});
+
+/* ---------- toolbox ---------- */
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentTool = btn.dataset.tool;
+  });
+});
+document.querySelector('.tool-btn[data-tool="pencil"]').classList.add('selected');
+
+/* ---------- thickness (ควบคุมด้วยคีย์บอร์ด ArrowUp / ArrowDown) ---------- */
+const thicknessBar = document.getElementById('thicknessBar');
+const thicknessValue = document.getElementById('thicknessValue');
+const MIN_THICKNESS = 1;
+const MAX_THICKNESS = 30;
+
+function updateThicknessDisplay() {
+  thicknessBar.style.height = thickness + 'px';
+  thicknessValue.textContent = thickness + ' px';
+}
+updateThicknessDisplay();
+
+/* ---------- palette (20 สี) ---------- */
+const paletteColors = [
+  '#000000', '#7f7f7f', '#ffffff', '#c3c3c3',
+  '#880015', '#ed1c24', '#ff7f27', '#fff200',
+  '#22b14c', '#00a2e8', '#3f48cc', '#a349a4',
+  '#ffaec9', '#ffc90e', '#b5e61d', '#99d9ea',
+  '#7092be', '#c8bfe7', '#b97a57', '#5c2d91'
+];
+const swatchesEl = document.getElementById('swatches');
+const currentSwatchEl = document.getElementById('currentSwatch');
+
+function hexToRgb(hex) {
+  const v = parseInt(hex.slice(1), 16);
+  return { r: (v >> 16) & 255, g: (v >> 8) & 255, b: v & 255 };
+}
+function setColor(hex) {
+  color = hexToRgb(hex);
+  currentSwatchEl.style.background = hex;
+}
+
+paletteColors.forEach((hex, i) => {
+  const sw = document.createElement('div');
+  sw.className = 'swatch' + (i === 0 ? ' selected' : '');
+  sw.style.background = hex;
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    setColor(hex);
+  });
+  swatchesEl.appendChild(sw);
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowUp') {
+    thickness += 1; // เพิ่มความหนาเส้น
+    if (thickness > MAX_THICKNESS) thickness = MAX_THICKNESS;
+  }
+  else if (event.key === 'ArrowDown') {
+    thickness -= 1; // ลดความหนาเส้น
+    if (thickness < MIN_THICKNESS) thickness = MIN_THICKNESS;
+  }
+
+  updateThicknessDisplay();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+});
+</script>
+</body>
+</html>

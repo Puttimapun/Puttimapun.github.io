@@ -173,6 +173,12 @@
   }
   @media (max-width:680px){ .feature{ grid-template-columns:1fr; } .feature-thumb{ max-width:220px; margin:0 auto; } }
 
+  .feature-thumb.paint-thumb{
+    background:
+      linear-gradient(135deg, #ff8fc7 0 25%, #6c5ce7 25% 50%, #27ae60 50% 75%, #f2c94c 75% 100%);
+  }
+  .feature-thumb.paint-thumb::before{ display:none; }
+
   .contact-links{ display:flex; gap:16px; flex-wrap:wrap; }
   footer{ padding:32px 0; text-align:center; color:var(--paper-dim); font-size:13px; font-family:'IBM Plex Mono', monospace; }
 
@@ -207,7 +213,7 @@
     <h1 class="name">Puttima</h1>
     <p class="role">นิสิตมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน สาขาวิทยาการคอมพิวเตอร์ (Computer Science) กำลังศึกษาชั้นปีที่ 3</p>
     <div class="hero-actions">
-      <a class="btn primary" href="#project">ดูโปรเจกต์ Transformation</a>
+      <a class="btn primary" href="#project">ดูโปรเจกต์ </a>
       <a class="btn ghost" href="#contact">ติดต่อฉัน</a>
     </div>
   </div>
@@ -234,7 +240,7 @@
       </div>
             <div class="tl-item">
         <div class="tl-date">ก่อนหน้า</div>
-        <div class="tl-body"><h3>โรงเรียนพะเยาพิทยาคม</h3><p>จังหวัดพะเยา — ระดับมัธยมศึกษาตอนปลาย <!-- แก้ไขตรงนี้: เพิ่มแผนการเรียน/ปีที่จบ ถ้าต้องการ --></p></div>
+        <div class="tl-body"><h3>โรงเรียนพะเยาพิทยาคม</h3><p>จังหวัดพะเยา — ระดับมัธยมศึกษาตอนปลาย </p></div>
       </div>
     </div>
   </div>
@@ -243,7 +249,6 @@
 <section id="skills">
   <div class="wrap">
     <div class="section-head reveal"><span class="section-num">03</span><h2>ทักษะ</h2></div>
-    <!-- แก้ไขตรงนี้: ทักษะและระดับความชำนาญ (0-100) -->
     <div class="diff reveal">
       <div class="diff-row"><span class="plus">+</span><span class="skill-name">JavaScript</span><div class="diff-bar"><div class="diff-fill" style="width:75%"></div></div><span class="level">75%</span></div>
       <div class="diff-row"><span class="plus">+</span><span class="skill-name">HTML / CSS</span><div class="diff-bar"><div class="diff-fill" style="width:85%"></div></div><span class="level">85%</span></div>
@@ -258,13 +263,20 @@
     <div class="section-head reveal"><span class="section-num">04</span><h2>✦ Interactive Computer Graphics</h2></div>
     <div class="feature reveal">
       <div>
-        <h3>Sprite Transformation: Translate · Rotate · Scale</h3>
-        <p>โปรเจกต์กราฟิกแบบ raster ที่วาด sprite สี 24 บิตด้วย ImageData API โดยตรง (ไม่พึ่งพา built-in shape ของ Canvas) รองรับการแปลงตำแหน่งด้วยเมาส์ และหมุน/ย่อ-ขยายด้วยคีย์บอร์ดแบบ real-time</p>
-        <div class="tags"><span class="tag">Canvas API</span><span class="tag">ImageData</span><span class="tag">Keyboard Interaction</span><span class="tag">2D Transformation</span></div>
+        <h3>Sprite transformation</h3>
+        <p>โปรเจกต์กราฟิกแบบ raster ที่วาด sprite สี 24 บิตด้วย ImageData API </p>
         <a class="btn primary" href="transformation.html">เปิดเดโม →</a>
       </div>
       <div class="feature-thumb"></div>
     </div>
+
+    <a class="feature reveal" href="mypaint.html" style="margin-top:24px; text-decoration:none; cursor:pointer;">
+      <div>
+        <h3>MyPaint — โปรแกรมวาดภาพ</h3>
+        <span class="btn primary" style="margin-top:14px;">เปิดโปรแกรม →</span>
+      </div>
+      <div class="feature-thumb paint-thumb"></div>
+    </a>
   </div>
 </section>
 
@@ -275,14 +287,10 @@
       <div class="contact-links">
         <a class="btn primary" href="mailto:puttima.p@ku.th">อีเมล</a>
         <a class="btn ghost" href="https://github.com/Puttimapun" target="_blank" rel="noopener">GitHub</a>
-        <!-- แก้ไขตรงนี้: ใส่ลิงก์ LinkedIn ถ้ามี หรือลบบรรทัดนี้ทิ้ง -->
-        <a class="btn ghost" href="https://linkedin.com/in/your-username" target="_blank" rel="noopener">LinkedIn</a>
       </div>
     </div>
   </div>
 </section>
-
-<footer>✿ © 2026 Puttima · Interactive Computer Graphics · สร้างด้วย GitHub Pages ✿</footer>
 
 <script>
   const revealEls = document.querySelectorAll('.reveal');
