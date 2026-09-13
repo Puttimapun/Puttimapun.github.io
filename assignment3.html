@@ -106,7 +106,7 @@
     /* ============================================================
        ENVIRONMENT 360° (HDRI)
     ============================================================= */
-    const hdriUrl = "https://raw.githubusercontent.com/Puttimapun/Puttimapun.github.io/main/ferndale_studio_06_2k.hdr";
+    const hdriUrl = "./ferndale_studio_06_2k.hdr";
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
@@ -174,7 +174,7 @@
        FLOOR (PBR MATERIAL)
     ============================================================= */
     const floorTexture = new THREE.TextureLoader().load(
-        "https://raw.githubusercontent.com/Puttimapun/Puttimapun.github.io/main/rubber_tiles_ao_2k.jpg"
+        "./rubber_tiles_ao_2k.jpg"
     );
     floorTexture.wrapS = THREE.RepeatWrapping;
     floorTexture.wrapT = THREE.RepeatWrapping;
@@ -275,7 +275,7 @@
     /* ============================================================
        MODEL (ROBOT)
     ============================================================= */
-    const modelUrl = "https://raw.githubusercontent.com/Puttimapun/Puttimapun.github.io/main/rusted-robot.glb";
+    const modelUrl = "./rusted-robot.glb";
 
     const gltfLoader = new THREE.GLTFLoader();
 
