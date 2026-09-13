@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/KTX2Loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19/dist/lil-gui.umd.min.js"></script>
 
@@ -279,6 +280,14 @@
     const modelUrl = "./rusted-robot.glb";
 
     const gltfLoader = new THREE.GLTFLoader();
+
+    // รองรับ Texture แบบ KTX2 ที่อยู่ในโมเดล GLB
+    const ktx2Loader = new THREE.KTX2Loader();
+    ktx2Loader.setTranscoderPath(
+        "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/basis/"
+    );
+    ktx2Loader.detectSupport(renderer);
+    gltfLoader.setKTX2Loader(ktx2Loader);
 
     const dracoLoader = new THREE.DRACOLoader();
     dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
