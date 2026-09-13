@@ -7,13 +7,17 @@
 
     <!-- ============================================================
          THREE.JS + LOADERS + CONTROLS + GUI
+         ใช้ Three.js เวอร์ชันเดียวกันทั้งหมด
     ============================================================= -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/KTX2Loader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+        }
+    }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19/dist/lil-gui.umd.min.js"></script>
 
     <style>
@@ -61,7 +65,15 @@
         ลากเมาส์ = หมุนกล้อง &nbsp;&nbsp;|&nbsp;&nbsp; Shift + ลาก = ขยับตำแหน่งแสง
     </div>
 
-<script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+
 (() => {
 
     /* ============================================================
@@ -78,7 +90,7 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
 
@@ -181,7 +193,7 @@
     floorTexture.wrapS = THREE.RepeatWrapping;
     floorTexture.wrapT = THREE.RepeatWrapping;
     floorTexture.repeat.set(8, 8);
-    floorTexture.encoding = THREE.sRGBEncoding;
+    floorTexture.colorSpace = THREE.SRGBColorSpace;
 
     const floorMaterial = new THREE.MeshStandardMaterial({
         map: floorTexture,
@@ -279,19 +291,25 @@
     ============================================================= */
     const modelUrl = "./rusted-robot.glb";
 
-    const gltfLoader = new THREE.GLTFLoader();
+    const gltfLoader = new GLTFLoader();
 
-    // รองรับ Texture แบบ KTX2 ที่อยู่ในโมเดล GLB
-    const ktx2Loader = new THREE.KTX2Loader();
+    // KTX2: rusted-robot.glb ใช้ KHR_texture_basisu
+    const ktx2Loader = new KTX2Loader();
     ktx2Loader.setTranscoderPath(
-        "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/basis/"
+        "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/libs/basis/"
     );
     ktx2Loader.detectSupport(renderer);
     gltfLoader.setKTX2Loader(ktx2Loader);
 
-    const dracoLoader = new THREE.DRACOLoader();
-    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+    // Draco: รองรับกรณีที่โมเดลมี Draco compression
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+        "https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+    );
     gltfLoader.setDRACOLoader(dracoLoader);
+
+    // สำคัญมาก: rusted-robot.glb ใช้ EXT_meshopt_compression
+    gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
     gltfLoader.load(
         modelUrl,
@@ -387,8 +405,10 @@
 
         (error) => {
             console.error("GLB loading error:", error);
-            document.getElementById("loading").textContent =
-                "โหลดโมเดลไม่สำเร็จ: " + (error && error.message ? error.message : "ไม่ทราบสาเหตุ");
+            document.getElementById("loading").innerHTML =
+                "โหลดโมเดลไม่สำเร็จ<br><br>" +
+                "ตรวจสอบว่า <b>rusted-robot.glb</b> อยู่ใน Repository เดียวกับไฟล์นี้<br>" +
+                "และลองเปิดผ่าน GitHub Pages ไม่ใช่ file://";
         }
     );
 
