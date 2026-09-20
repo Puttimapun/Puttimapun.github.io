@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Puttima — CV</title>
-<meta name="description" content="CV และผลงานวิชา Interactive Computer Graphics">
+<meta name="description" content="CV และผลงานวิชา Introduction to Interactive Computer Graphics">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,9 +42,9 @@
     backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line);
   }
-  nav .wrap{ display:flex; align-items:center; justify-content:space-between; padding-top:16px; padding-bottom:16px; }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:16px; padding-bottom:16px; }
   .logo{ font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--amber); }
-  .navlinks{ display:flex; gap:24px; font-size:14px; }
+  .navlinks{ display:flex; gap:24px; font-size:14px; flex-wrap:wrap; }
   .navlinks a{ color:var(--paper-dim); transition:color .2s; }
   .navlinks a:hover{ color:var(--paper); }
 
@@ -142,7 +142,7 @@
   .diff-fill{ height:100%; background:var(--teal); border-radius:3px; }
   .diff-row .level{ color:var(--paper-dim); font-size:12px; min-width:36px; text-align:right; }
 
-  /* featured project (Interactive Computer Graphics) */
+  /* featured project (Introduction to Interactive Computer Graphics) */
   .feature{
     background:var(--ink-soft); border:1px solid var(--line); border-radius:10px;
     padding:32px; display:grid; grid-template-columns:1fr 220px; gap:28px; align-items:center;
@@ -179,6 +179,25 @@
   }
   .feature-thumb.paint-thumb::before{ display:none; }
 
+  .feature-thumb.three-thumb{
+    background:
+      radial-gradient(circle at 34% 30%, rgba(255,255,255,.95) 0 6%, rgba(255,255,255,0) 26%),
+      radial-gradient(circle at 50% 46%, #f43f5e 0 26%, #9f1239 27% 32%, rgba(159,18,60,0) 33%),
+      radial-gradient(ellipse at 50% 76%, rgba(76,5,25,.35) 0 18%, rgba(76,5,25,0) 60%),
+      linear-gradient(180deg, #4c0519, #2b0310);
+  }
+  .feature-thumb.three-thumb::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(253,164,175,.25) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(253,164,175,.25) 1px, transparent 1px);
+    background-size:26px 26px;
+    transform:perspective(220px) rotateX(62deg) translateY(28%);
+    transform-origin:50% 100%;
+    opacity:.5;
+  }
+
   .contact-links{ display:flex; gap:16px; flex-wrap:wrap; }
   footer{ padding:32px 0; text-align:center; color:var(--paper-dim); font-size:13px; font-family:'IBM Plex Mono', monospace; }
 
@@ -192,11 +211,11 @@
 
 <nav>
   <div class="wrap">
-    <span class="logo">~/cv</span>
+    <span class="logo">~/cv </span>
     <div class="navlinks">
       <a href="#education">การศึกษา</a>
       <a href="#skills">ทักษะ</a>
-      <a href="#project">Interactive Computer Graphics</a>
+      <a href="#project">Introduction to Interactive Computer Graphics</a>
       <a href="#contact">ติดต่อ</a>
     </div>
   </div>
@@ -209,7 +228,7 @@
       <path d="M32 32 C44 18, 60 20, 60 30 C60 40, 44 38, 32 32 Z" fill="#FDA4AF"/>
       <circle cx="32" cy="32" r="6" fill="#BE123C"/>
     </svg>
-    <div class="eyebrow"><span class="dot"></span> CV — Interactive Computer Graphics Course</div>
+    <div class="eyebrow"><span class="dot"></span> CV Introduction to Interactive Computer Graphics</div>
     <h1 class="name">Puttima</h1>
     <p class="role">นิสิตมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน สาขาวิทยาการคอมพิวเตอร์ (Computer Science) กำลังศึกษาชั้นปีที่ 3</p>
     <div class="hero-actions">
@@ -236,7 +255,7 @@
     <div class="timeline reveal">
       <div class="tl-item">
         <div class="tl-date">กำลังศึกษา</div>
-        <div class="tl-body"><h3>มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน</h3><p>สาขาวิทยาการคอมพิวเตอร์ (Computer Science) — กำลังศึกษาชั้นปีที่ 3, ลงเรียนวิชา Interactive Computer Graphics</p></div>
+        <div class="tl-body"><h3>มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน</h3><p>สาขาวิทยาการคอมพิวเตอร์ (Computer Science) — กำลังศึกษาชั้นปีที่ 3, ลงเรียนวิชา Introduction to Interactive Computer Graphics</p></div>
       </div>
             <div class="tl-item">
         <div class="tl-date">ก่อนหน้า</div>
@@ -260,11 +279,10 @@
 
 <section id="project">
   <div class="wrap">
-    <div class="section-head reveal"><span class="section-num">04</span><h2>✦ Interactive Computer Graphics</h2></div>
+    <div class="section-head reveal"><span class="section-num">04</span><h2>✦ Introduction to Interactive Computer Graphics</h2></div>
     <div class="feature reveal">
       <div>
         <h3>Sprite transformation</h3>
-        <p>โปรเจกต์กราฟิกแบบ raster ที่วาด sprite สี 24 บิตด้วย ImageData API </p>
         <a class="btn primary" href="transformation.html">เปิดเดโม →</a>
       </div>
       <div class="feature-thumb"></div>
@@ -276,6 +294,16 @@
         <span class="btn primary" style="margin-top:14px;">เปิดโปรแกรม →</span>
       </div>
       <div class="feature-thumb paint-thumb"></div>
+    </a>
+
+    <a class="feature reveal" href="assignment3.html" style="margin-top:24px; text-decoration:none; cursor:pointer;">
+      <div>
+        <h3>3D PBR </h3>
+        <div class="tags">
+        </div>
+        <span class="btn primary">เปิดเดโม →</span>
+      </div>
+      <div class="feature-thumb three-thumb"></div>
     </a>
   </div>
 </section>
