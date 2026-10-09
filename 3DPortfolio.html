@@ -252,6 +252,36 @@ function enhanceMetalMaterials(root) {
   });
 }
 
+// Vertex Shader: subtle real-time wind sway for tree leaves and bushes.
+const windShaderMaterials = [];
+function addVertexWindShader(mesh) {
+  const sourceMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const windMaterials = sourceMaterials.map((sourceMaterial) => {
+    if (!sourceMaterial || !sourceMaterial.isMeshStandardMaterial) return sourceMaterial;
+    const material = sourceMaterial.clone();
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms.uWindTime = { value: 0 };
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <common>',
+        '#include <common>\nuniform float uWindTime;'
+      );
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+         // Move vertices gently like leaves blowing in the wind.
+         float windWeight = clamp(position.y + 0.5, 0.0, 1.0);
+         transformed.x += sin(uWindTime * 2.7 + position.x * 2.0 + position.y) * 0.045 * windWeight;
+         transformed.z += cos(uWindTime * 2.3 + position.z * 1.8 + position.y) * 0.035 * windWeight;`
+      );
+      material.userData.windShader = shader;
+      windShaderMaterials.push(material);
+    };
+    material.customProgramCacheKey = () => 'portfolio-tree-vertex-wind-v1';
+    return material;
+  });
+  mesh.material = Array.isArray(mesh.material) ? windMaterials : windMaterials[0];
+}
+
 function markClickableObjects(root) {
   root.traverse((obj) => {
     const n = obj.name || '';
@@ -278,6 +308,8 @@ function markClickableObjects(root) {
     if (obj.isMesh) {
       obj.castShadow = true;
       obj.receiveShadow = true;
+      // Only foliage is animated; the house, signs, and portfolio text stay unchanged.
+      if (/leaf|bush/i.test(n)) addVertexWindShader(obj);
     }
   });
 
@@ -476,8 +508,15 @@ try {
   errorBox.style.display = 'grid';
 }
 
+const windClock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
+  const elapsed = windClock.getElapsedTime();
+  for (const material of windShaderMaterials) {
+    if (material.userData.windShader) {
+      material.userData.windShader.uniforms.uWindTime.value = elapsed;
+    }
+  }
   if (!movingCamera) controls.update();
   renderer.render(scene, camera);
 }
